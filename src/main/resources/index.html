@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Bank Account</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script type=”text/javascript” src=”js/script.js”></script>
+</head>
+<body>
+<div class="container">
+    <div class="page-header">
+        <h1>Decagon <small>Code Challenge</small></h1>
+    </div>
+
+    <hr>
+    <div>
+
+        <div><h1>Create New Account</h1></div>
+        <label for="accountName">Account Name:</label><br>
+        <input type="text" id="accountName" name="accountName"><br><br>
+
+        <label for="phoneNo">Phone No:</label><br>
+        <input type="text" id="phoneNo" name="phoneNo"><br><br>
+        <button onclick="createAccount()"> Create account</button>
+
+
+    </div>
+    <hr>
+
+    <h1>Simulate Withdraw</h1>
+    <br>
+
+    <label for="withdrawal-accountNo">Account No:</label><br>
+    <input type="text" id="withdrawal-accountNo" name="withdrawal-accountNo"><br><br>
+
+    <label for="withdrawal-amount">Amount:</label><br>
+    <input type="text" id="withdrawal-amount" name="withdrawal-amount"><br><br>
+    <button onclick="withdraw()">Simulate Withdraw</button>
+
+    <hr>
+
+    <h1>Deposit</h1>
+    <br>
+
+    <label for="deposit-accountNo">Account No:</label><br>
+    <input type="text" id="deposit-accountNo" name="deposit-accountNo"><br><br>
+
+    <label for="deposit-amount">Amount:</label><br>
+    <input type="text" id="deposit-amount" name="deposit-amount"><br><br>
+    <button onclick="deposit()">Deposit</button>
+
+
+</div>
+
+<div><h1>List of Accounts</h1></div>
+<br>
+<div class='accountList'></div>
+
+<div><h1>List of Transactions</h1></div>
+<label for="search-account">Account No:</label><br>
+<input type="text" id="search-account" name="search-account"><br><br>
+<button onclick="getTransactions()">Search</button>
+<div class='transactionList'>
+
+</div>
+
+<script>
+
+    const BASE_URL = "http://localhost:8779/api/v1/account"
+    //load account list when window DOM is ready
+    window.onload = function (e) {
+        getAccountList();
+        getTransactions();
+
+    }
+
+    function createAccount() {
+
+        const URL = `${BASE_URL}/create`;
+        let reqObj = {accountName: "", phoneNo: ""}
+
+        let accountName = document.getElementById("accountName").value
+        let phoneNo = document.getElementById("phoneNo").value
+        reqObj.accountName = accountName;
+        reqObj.phoneNo = phoneNo;
+        fetch(`${URL}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(reqObj),
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                if(data.status == "false")
+                    window.alert(data.message)
+                console.log(data)
+                getAccountList();
+
+            })
+            .catch((err) => {
+                window.alert(err);
+                console.log(err)
+            });
+
+    }
+
+    function deposit() {
+
+        const URL = `${BASE_URL}/deposit`;
+        let accountNo = document.getElementById("deposit-accountNo").value
+        let amount = document.getElementById("deposit-amount").value
+        let reqObj = {accountNo:accountNo, amount: amount}
+
+        fetch(`${URL}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(reqObj),
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                if(data.status == "false")
+                    window.alert(data.message)
+                console.log(data)
+                getTransactions();
+
+            })
+            .catch((err) => {
+                window.alert(err);
+                console.log(err)
+            });
+    }
+
+    function withdraw() {
+
+        const URL = `${BASE_URL}/withdraw`;
+        let accountNo = document.getElementById("withdrawal-accountNo").value
+        let amount = document.getElementById("withdrawal-amount").value
+        let reqObj = {accountNo:accountNo, amount: amount}
+
+        fetch(`${URL}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(reqObj),
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                if(data.status == "false")
+                window.alert(data.message)
+                console.log(data)
+                getTransactions();
+
+            })
+            .catch((err) => {
+                window.alert(err.message)
+                console.log('erroror'+err)
+            });
+
+    }
+
+    function parseUnixTimestamp(timeStamp) {
+        var dt = new Date(timeStamp*1000);
+        var hr = dt.getHours();
+        var m = "0" + dt.getMinutes();
+        var s = "0" + dt.getSeconds();
+        return hr+ ':' + m.substr(-2) + ':' + s.substr(-2);
+    }
+
+     //####################################### TRANSACTION LIST ###################################################################
+
+    let tableHeaders = ["Account Name", "Account Number", "Amount", "Transaction Type", "Created At"]
+    const transactionListDiv = document.querySelector("div.transactionList") // Find the transactionList div in the html
+
+    const createTransactionListTable = () => {
+        while (transactionListDiv.firstChild) transactionListDiv.removeChild(transactionListDiv.firstChild) // Remove all children from transactionList div (if any)
+        let transactionListTable = document.createElement('table') // Create the table itself
+        transactionListTable.className = 'transactionListTable'
+        let transactionListHead = document.createElement('thead') // Creates the table header group element
+        transactionListHead.className = 'transactionListHead'
+        let transactionListTableHeaderRow = document.createElement('tr') // Creates the row that will contain the headers
+        transactionListTableHeaderRow.className = 'transactionListTableHeaderRow'
+// Will iterate over all the strings in the tableHeader array and will append the header cells to the table header row
+        tableHeaders.forEach(header => {
+            let transactionListHeader = document.createElement('th') // Creates the current header cell during a specific iteration
+            transactionListHeader.innerText = header
+            transactionListTableHeaderRow.append(transactionListHeader) // Appends the current header cell to the header row
+        })
+        transactionListHead.append(transactionListTableHeaderRow) // Appends the header row to the table header group element
+        transactionListTable.append(transactionListHead)
+        let transactionListTableBody = document.createElement('tbody') // Creates the table body group element
+        transactionListTableBody.className = "transactionListTable-Body"
+        transactionListTable.append(transactionListTableBody) // Appends the table body group element to the table
+        transactionListDiv.append(transactionListTable) // Appends the table to the transactionList div
+    }
+
+    // The function below will accept a single transaction
+    const appendTransactions = (singleTransaction) => {
+        const transactionListTable = document.querySelector('.transactionListTable') // Find the table created
+        let transactionListTableBodyRow = document.createElement('tr') // Create the current table row
+        transactionListTableBodyRow.className = 'transactionListTableBodyRow'
+//  create the 5 column cells that will be appended to the current table row
+
+        let accountName = document.createElement('td')
+        accountName.innerText = JSON.stringify(singleTransaction.accountName)
+
+        let accountNo = document.createElement('td')
+        accountNo.innerText = singleTransaction.accountNo
+
+        let amount = document.createElement('td')
+        amount.innerText = singleTransaction.amount
+
+        let transactionType = document.createElement('td')
+        transactionType.innerText = singleTransaction.transactionType
+
+        let createdAt = document.createElement('td')
+        createdAt.innerText = parseUnixTimestamp(singleTransaction.createdAt)
+
+        transactionListTableBodyRow.append(accountName, accountNo, amount, transactionType, createdAt) // Append all 5 cells to the table row
+        transactionListTable.append(transactionListTableBodyRow) // Append the current row to the transactionList table body
+    }
+
+    const getTransactions = () => {
+        let accountNoKey = document.getElementById("search-account").value;
+        let TRANSACTIONS_LIST_URL = `${BASE_URL}/transactions?accountNo=${accountNoKey ? accountNoKey : ""}`
+        fetch(TRANSACTIONS_LIST_URL) // Fetch for all transactions. The response is an array of objects that is sorted by the most recent transaction
+            .then(res => res.json())
+            .then(transactions => {
+                createTransactionListTable() // Clears transactionList div if it has any children nodes, creates & appends the table
+
+// Iterates through all the objects in the transactions array and appends each one to the table body
+                for (let index in transactions) {
+                    appendTransactions(transactions[index]) // Creates and appends each row to the table body
+                    console.log(transactions[index])
+                }
+            })
+    }
+
+    //########################################### ACCOUNT LIST ###############################################################
+    let accountTableHeaders = ["Account Name", "Account No", "Phone No", "Balance"]
+    const accountListDiv = document.querySelector("div.accountList") // Find the accountList div in our html
+    const createAccountListTable = () => {
+        while (accountListDiv.firstChild) accountListDiv.removeChild(accountListDiv.firstChild) // Remove all children from accountList div (if any)
+        let accountListTable = document.createElement('table') // Create the table itself
+        accountListTable.className = 'accountListTable'
+        let accountListHead = document.createElement('thead') // Creates the table header group element
+        accountListHead.className = 'accountListHead'
+        let accountListTableHeaderRow = document.createElement('tr') // Creates the row that will contain the headers
+        accountListTableHeaderRow.className = 'accountListTableHeaderRow'
+// Will iterate over all the strings in the tableHeader array and will append the header cells to the table header row
+        accountTableHeaders.forEach(header => {
+            let accountListHeader = document.createElement('th') // Creates the current header cell during a specific iteration
+            accountListHeader.innerText = header
+            accountListTableHeaderRow.append(accountListHeader) // Appends the current header cell to the header row
+        })
+        accountListHead.append(accountListTableHeaderRow) // Appends the header row to the table header group element
+        accountListTable.append(accountListHead)
+        let accountListTableBody = document.createElement('tbody') // Creates the table body group element
+        accountListTableBody.className = "accountListTable-Body"
+        accountListTable.append(accountListTableBody) // Appends the table body group element to the table
+        accountListDiv.append(accountListTable) // Appends the table to the accountList div
+    }
+
+    // The function below will accept a single account
+    const appendAccounts = (singleAccount) => {
+        const accountListTable = document.querySelector('.accountListTable') // Find the table  created
+        let accountListTableBodyRow = document.createElement('tr') // Create the current table row
+        accountListTableBodyRow.className = 'accountListTableBodyRow'
+
+//  create the 4 column cells that will be appended to the current table row
+        let accountName = document.createElement('td')
+        accountName.innerText = singleAccount.accountName
+
+        let accountNo = document.createElement('td')
+        accountNo.innerText = singleAccount.accountNo
+
+        let phoneNo = document.createElement('td')
+        phoneNo.innerText = singleAccount.phoneNo
+
+        let balance = document.createElement('td')
+        balance.innerText = singleAccount.balance
+
+        accountListTableBodyRow.append( accountName, accountNo,phoneNo, balance) // Append all 4 cells to the table row
+        accountListTable.append(accountListTableBodyRow) // Append the current row to the accountList table body
+    }
+    const getAccountList = () => {
+        fetch(`${BASE_URL}/accounts`) // Fetch for all accounts. The response is an array of objects
+            .then(res => res.json())
+            .then(accounts => {
+                createAccountListTable() // Clears accountList div if it has any children nodes, creates & appends the table
+// Iterates through all the objects in the accounts array and appends each one to the table body
+
+                for (let index in accounts) {
+                    appendAccounts(accounts[index]) // Creates and appends each row to the table body
+
+                }
+            })
+    }
+
+    //##########################################################################################################
+
+
+
+</script>
+</body>
+</html>
+
+
