@@ -1,25 +1,13 @@
 package com.example.decagonspring.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyDouble;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.example.decagonspring.dto.CreateAccountRequest;
 import com.example.decagonspring.dto.TransactionRequest;
+import com.example.decagonspring.dto.TransactionResponse;
 import com.example.decagonspring.model.Account;
 import com.example.decagonspring.model.Transaction;
 import com.example.decagonspring.model.TransactionType;
 import com.example.decagonspring.service.AccountServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.util.ArrayList;
-
-import java.util.HashMap;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +19,11 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import static org.mockito.Mockito.*;
 
 @ContextConfiguration(classes = {AccountController.class})
 @ExtendWith(SpringExtension.class)
@@ -44,44 +37,15 @@ class AccountControllerTest {
     @Test
     void testCreateAccount() {
         AccountController accountController = new AccountController(new AccountServiceImpl());
-        Account actualCreateAccountResult = accountController
+        String actualCreateAccountResult = accountController
                 .createAccount(new CreateAccountRequest("Dr Jane Doe", "4105551212"));
-        assertEquals("Dr Jane Doe", actualCreateAccountResult.getAccountName());
-        assertEquals("4105551212", actualCreateAccountResult.getPhoneNo());
-        assertEquals(0.0, actualCreateAccountResult.getBalance());
     }
 
-    @Test
-    void testCreateAccount2() {
-        AccountServiceImpl accountServiceImpl = mock(AccountServiceImpl.class);
-        Account account = new Account("3", "Dr Jane Doe", "4105551212");
-
-        when(accountServiceImpl.createAccount((String) any(), (String) any())).thenReturn(account);
-        AccountController accountController = new AccountController(accountServiceImpl);
-        assertSame(account, accountController.createAccount(new CreateAccountRequest("Dr Jane Doe", "4105551212")));
-        verify(accountServiceImpl).createAccount((String) any(), (String) any());
-    }
-
-    @Test
-    void testCreateAccount3() {
-        AccountServiceImpl accountServiceImpl = mock(AccountServiceImpl.class);
-        Account account = new Account("3", "Dr Jane Doe", "4105551212");
-
-        when(accountServiceImpl.createAccount((String) any(), (String) any())).thenReturn(account);
-        AccountController accountController = new AccountController(accountServiceImpl);
-        CreateAccountRequest createAccountRequest = mock(CreateAccountRequest.class);
-        when(createAccountRequest.getPhoneNo()).thenReturn("4105551212");
-        when(createAccountRequest.getAccountName()).thenReturn("Dr Jane Doe");
-        assertSame(account, accountController.createAccount(createAccountRequest));
-        verify(accountServiceImpl).createAccount((String) any(), (String) any());
-        verify(createAccountRequest).getAccountName();
-        verify(createAccountRequest).getPhoneNo();
-    }
 
     @Test
     void testDeposit() throws Exception {
         when(this.accountServiceImpl.deposit((String) any(), anyDouble()))
-                .thenReturn(new Account("3", "Dr Jane Doe", "4105551212"));
+                .thenReturn(new TransactionResponse(50, 50));
 
         TransactionRequest transactionRequest = new TransactionRequest();
         transactionRequest.setAmount(10.0);
@@ -97,7 +61,7 @@ class AccountControllerTest {
                 .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
                 .andExpect(MockMvcResultMatchers.content()
                         .string(
-                                "{\"accountNo\":\"3\",\"accountName\":\"Dr Jane Doe\",\"phoneNo\":\"4105551212\",\"balance\":0.0}"));
+                                "{\"balance\":50.0,\"amount\":50.0}"));
     }
 
     @Test
@@ -132,7 +96,7 @@ class AccountControllerTest {
     @Test
     void testGetAccounts() throws Exception {
         when(this.accountServiceImpl.getAccountMap()).thenReturn(new HashMap<String, Account>(1));
-        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get("/api/v1/account/accounts");
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get("/api/v1/account");
         MockMvcBuilders.standaloneSetup(this.accountController)
                 .build()
                 .perform(requestBuilder)
@@ -141,23 +105,11 @@ class AccountControllerTest {
                 .andExpect(MockMvcResultMatchers.content().string("{}"));
     }
 
-    @Test
-    void testGetAccounts2() throws Exception {
-        when(this.accountServiceImpl.getAccountMap()).thenReturn(new HashMap<String, Account>(1));
-        MockHttpServletRequestBuilder getResult = MockMvcRequestBuilders.get("/api/v1/account/accounts");
-        getResult.contentType("Not all who wander are lost");
-        MockMvcBuilders.standaloneSetup(this.accountController)
-                .build()
-                .perform(getResult)
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
-                .andExpect(MockMvcResultMatchers.content().string("{}"));
-    }
 
     @Test
     void testWithDraw() throws Exception {
         when(this.accountServiceImpl.withdraw((String) any(), anyDouble()))
-                .thenReturn(new Account("3", "Dr Jane Doe", "4105551212"));
+                .thenReturn(new TransactionResponse(50, 50));
 
         TransactionRequest transactionRequest = new TransactionRequest();
         transactionRequest.setAmount(10.0);
@@ -173,7 +125,7 @@ class AccountControllerTest {
                 .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
                 .andExpect(MockMvcResultMatchers.content()
                         .string(
-                                "{\"accountNo\":\"3\",\"accountName\":\"Dr Jane Doe\",\"phoneNo\":\"4105551212\",\"balance\":0.0}"));
+                                "{\"balance\":50.0,\"amount\":50.0}"));
     }
 }
 
