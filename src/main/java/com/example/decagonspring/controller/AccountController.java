@@ -1,5 +1,6 @@
 package com.example.decagonspring.controller;
 
+import com.example.decagonspring.dto.TransactionResponse;
 import com.example.decagonspring.service.AccountServiceImpl;
 import com.example.decagonspring.dto.CreateAccountRequest;
 import com.example.decagonspring.model.Transaction;
@@ -8,6 +9,8 @@ import com.example.decagonspring.model.Account;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -26,26 +29,26 @@ public class AccountController {
     }
 
     @PostMapping("/create")
-    public Account createAccount(@RequestBody CreateAccountRequest accountRequest) {
+    public String createAccount(@RequestBody CreateAccountRequest accountRequest) {
         return accountService.createAccount(accountRequest.getAccountName(), accountRequest.getPhoneNo());
     }
 
     @PostMapping("/withdraw")
-    public Account withDraw(@RequestBody TransactionRequest transactionRequest) {
+    public TransactionResponse withDraw(@RequestBody TransactionRequest transactionRequest) {
         return accountService.withdraw(transactionRequest.getAccountNo(), transactionRequest.getAmount());
     }
 
     @PostMapping("/deposit")
-    public Account deposit(@RequestBody TransactionRequest transactionRequest) {
+    public TransactionResponse deposit(@RequestBody TransactionRequest transactionRequest) {
         return accountService.deposit(transactionRequest.getAccountNo(), transactionRequest.getAmount());
     }
 
     @GetMapping("/transactions")
-    public List<Transaction> getTransactions(@RequestParam(required = false) String accountNo) {
+    public Collection<Transaction> getTransactions(@RequestParam(required = false) String accountNo) {
         return accountService.getTransactions(accountNo);
     }
 
-    @GetMapping("/")
+    @GetMapping
     public Map<String,Account> getAccounts(@RequestParam(required = false) String accountNo) {
         return accountService.getAccountMap();
     }

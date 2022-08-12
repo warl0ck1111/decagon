@@ -6,24 +6,26 @@
     <script type=”text/javascript” src=”js/script.js”></script>
 </head>
 <body>
+
+<div id="error" class="error"> </div>
 <div class="container">
     <div class="page-header">
         <h1>Decagon <small>Code Challenge</small></h1>
     </div>
 
     <hr>
-    <div>
+<!--    <div>-->
 
-        <div><h1>Create New Account</h1></div>
-        <label for="accountName">Account Name:</label><br>
-        <input type="text" id="accountName" name="accountName"><br><br>
+<!--        <div><h1>Create New Account</h1></div>-->
+<!--        <label for="accountName">Account Name:</label><br>-->
+<!--        <input type="text" id="accountName" name="accountName"><br><br>-->
 
-        <label for="phoneNo">Phone No:</label><br>
-        <input type="text" id="phoneNo" name="phoneNo"><br><br>
-        <button onclick="createAccount()"> Create account</button>
+<!--        <label for="phoneNo">Phone No:</label><br>-->
+<!--        <input type="text" id="phoneNo" name="phoneNo"><br><br>-->
+        <button onclick="generateAccounts()"> Generate account</button>
 
 
-    </div>
+<!--    </div>-->
     <hr>
 
     <h1>Simulate Withdraw</h1>
@@ -34,7 +36,7 @@
 
     <label for="withdrawal-amount">Amount:</label><br>
     <input type="text" id="withdrawal-amount" name="withdrawal-amount"><br><br>
-    <button onclick="withdraw()">Simulate Withdraw</button>
+    <button onclick="withdrawRandomAmountsIntoAccount()">Simulate Withdraw</button>
 
     <hr>
 
@@ -46,7 +48,7 @@
 
     <label for="deposit-amount">Amount:</label><br>
     <input type="text" id="deposit-amount" name="deposit-amount"><br><br>
-    <button onclick="deposit()">Deposit</button>
+    <button onclick="depositRandomAmountsIntoAccount()">Deposit</button>
 
 
 </div>
@@ -64,8 +66,6 @@
 </div>
 
 <script>
-
-    const BASE_URL = "http://localhost:8779/api/v1/account"
     //load account list when window DOM is ready
     window.onload = function (e) {
         getAccountList();
@@ -73,13 +73,16 @@
 
     }
 
-    function createAccount() {
+    const BASE_URL = "http://localhost:8779/api/v1/account"
+    const accountNumbers = [];
+
+    function createAccount(accountName, phoneNo) {
 
         const URL = `${BASE_URL}/create`;
         let reqObj = {accountName: "", phoneNo: ""}
 
-        let accountName = document.getElementById("accountName").value
-        let phoneNo = document.getElementById("phoneNo").value
+        // let accountName = document.getElementById("accountName").value
+        // let phoneNo = document.getElementById("phoneNo").value
         reqObj.accountName = accountName;
         reqObj.phoneNo = phoneNo;
         fetch(`${URL}`, {
@@ -89,24 +92,29 @@
         })
             .then((res) => res.json())
             .then((data) => {
-                if(data.status == "false")
+                if(data.status === "false")
                     window.alert(data.message)
-                console.log(data)
-                getAccountList();
+                else {
+                    console.log(data)
+                    getAccountList();
+                }
 
             })
             .catch((err) => {
                 window.alert(err);
                 console.log(err)
+                document.getElementById("error").value = err.message
             });
 
     }
 
-    function deposit() {
+    function deposit(accountNo, amount) {
 
         const URL = `${BASE_URL}/deposit`;
-        let accountNo = document.getElementById("deposit-accountNo").value
-        let amount = document.getElementById("deposit-amount").value
+        if(!accountNo && !amount) {
+             accountNo = document.getElementById("deposit-accountNo").value
+             amount = document.getElementById("deposit-amount").value
+        }
         let reqObj = {accountNo:accountNo, amount: amount}
 
         fetch(`${URL}`, {
@@ -116,7 +124,7 @@
         })
             .then((res) => res.json())
             .then((data) => {
-                if(data.status == "false")
+                if(data.status === "false")
                     window.alert(data.message)
                 console.log(data)
                 getTransactions();
@@ -142,7 +150,7 @@
         })
             .then((res) => res.json())
             .then((data) => {
-                if(data.status == "false")
+                if(data.status === "false")
                 window.alert(data.message)
                 console.log(data)
                 getTransactions();
@@ -156,16 +164,16 @@
     }
 
     function parseUnixTimestamp(timeStamp) {
-        var dt = new Date(timeStamp*1000);
-        var hr = dt.getHours();
-        var m = "0" + dt.getMinutes();
-        var s = "0" + dt.getSeconds();
+        let dt = new Date(timeStamp*1000);
+        let hr = dt.getHours();
+        let m = "0" + dt.getMinutes();
+        let s = "0" + dt.getSeconds();
         return hr+ ':' + m.substr(-2) + ':' + s.substr(-2);
     }
 
      //####################################### TRANSACTION LIST ###################################################################
 
-    let tableHeaders = ["Account Name", "Account Number", "Amount", "Transaction Type", "Created At"]
+    let tableHeaders = ["Account Name", "Account Number", "Amount", "Transaction Type", "Time"]
     const transactionListDiv = document.querySelector("div.transactionList") // Find the transactionList div in the html
 
     const createTransactionListTable = () => {
@@ -280,7 +288,7 @@
         accountListTable.append(accountListTableBodyRow) // Append the current row to the accountList table body
     }
     const getAccountList = () => {
-        fetch(`${BASE_URL}/accounts`) // Fetch for all accounts. The response is an array of objects
+        fetch(`${BASE_URL}/`) // Fetch for all accounts. The response is an array of objects
             .then(res => res.json())
             .then(accounts => {
                 createAccountListTable() // Clears accountList div if it has any children nodes, creates & appends the table
@@ -288,13 +296,129 @@
 
                 for (let index in accounts) {
                     appendAccounts(accounts[index]) // Creates and appends each row to the table body
-
+                    accountNumbers.push(accounts[index].accountNo)
                 }
             })
     }
 
     //##########################################################################################################
 
+    function generateAccounts(){
+        let names = [ "Benedict Cumberbach", "John Doe", "Rachel Zayne", "Jenifer Aniston", "Austin Mark", "Miracle ELue", "Josh Bloch", "Kim Khadashian", "Kanye West", "Bow Wow", "Oscar", "Silvester Stellone", "Merilyn Streep","Adin Ross", "Tommy Shelby","Kurtis Predovic","Berneice Ankunding","Micaela Beahan","Julianne Brakus","Shane Mitchell","Ocie Marvin","Jamel Williamson","Lue Larkin","Athena Hills","Wilhelmine Keebler","Ernesto Stroman","Sylvester Carter","Kristin Hettinger","Ignacio Ryan","Rodolfo Wilderman","Cindy Mills","Eleanore Rath","Bridgette Kling","Arnoldo Wilderman","Daphney Schoen","Juanita Roberts","Forest Huels","Maye Casper","Harry Ankunding","Bret Gusikowski","Micah Corkery","Patricia Kuhlman","Glennie Leannon","Geoffrey Fisher","Cecelia Weissnat","Jerome Lemke","Jillian Brakus","Elian Greenfelder","Antonina Ondricka","Karianne Schuster","Merle Cummerata","Missouri Hodkiewicz","Colten Bins","Rosella Dickinson","Fausto Orn","Amani Gerhold","Orpha Olson","Brannon Kling","Frankie Wuckert","Gilbert Daniel","Adrian Heaney","Genevieve Grady","Marco Dicki","Bonita Langworth","Joshua Parisian",];
+
+        let promiseArr = [];
+        const URL = `${BASE_URL}/create`;
+
+        for (let i = 0; i < 10; i++) {
+            // console.log(names.pop())
+            let reqObj = {accountName: names.pop(), phoneNo: generateRamdomPhoneNumbers()}
+            promiseArr.push(fetch(`${URL}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(reqObj),
+            }))
+        }
+
+        Promise.all([
+            promiseArr
+        ]).then(function (responses) {
+            // Get a JSON object from each of the responses
+            return Promise.all(responses.map(function (response) {
+                return response.json();
+            }));
+        }).then(function (data) {
+            window.alert(data.message)
+                        console.log(data)
+                        // getAccountList();
+            // Log the data to the console
+            // You would do something with both sets of data here
+            console.log(data);
+        }).catch(function (error) {
+            // if there's an error, log it
+            console.log(error);
+            window.alert(error.message)
+        });
+
+        getAccountList();
+        getTransactions();
+            }
+    function generateRamdomPhoneNumbers(){
+        let arr = "";
+        while(arr.length < 12){
+            let r = Math.floor(Math.random() * 100) + 1;
+            arr+=r;
+        }
+        return arr;
+    }
+
+    function generateRandomAmount(){
+        return Math.floor((Math.random()+1) * 10000);
+    }
+
+    function depositRandomAmountsIntoAccount(){
+        let promiseArr = [];
+        const URL = `${BASE_URL}/deposit`;
+
+        for (let i = 0; i < accountNumbers.length; i++) {
+            let reqObj = {accountNo: accountNumbers[i], amount: generateRandomAmount()}
+            promiseArr.push(fetch(`${URL}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(reqObj),
+            }))
+        }
+        Promise.all([
+            promiseArr
+        ]).then(function (responses) {
+            // Get a JSON object from each of the responses
+            return Promise.all(responses.map(function (response) {
+                return response.json();
+            }));
+        }).then(function (data) {
+            console.log(data)
+            // Log the data to the console
+            // You would do something with both sets of data here
+            console.log(data);
+        }).catch(function (error) {
+            // if there's an error, log it
+            console.log(error);
+        });
+        getAccountList();
+        getTransactions();
+
+    }
+
+    function withdrawRandomAmountsIntoAccount(){
+        let promiseArr = [];
+        const URL = `${BASE_URL}/withdraw`;
+
+        for (let i = 0; i < accountNumbers.length; i++) {
+            let reqObj = {accountNo: accountNumbers[i], amount: generateRandomAmount()}
+            promiseArr.push(fetch(`${URL}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(reqObj),
+            }))
+        }
+        Promise.all([
+            promiseArr
+        ]).then(function (responses) {
+            // Get a JSON object from each of the responses
+            return Promise.all(responses.map(function (response) {
+                return response.json();
+            }));
+        }).then(function (data) {
+            console.log(data)
+            // Log the data to the console
+            // You would do something with both sets of data here
+            console.log(data);
+        }).catch(function (error) {
+            // if there's an error, log it
+            console.log(error);
+        });
+        getAccountList();
+        getTransactions();
+    }
 
 
 </script>

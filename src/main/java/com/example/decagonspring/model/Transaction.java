@@ -6,9 +6,7 @@ package com.example.decagonspring.model;/*
  */
 
 
-import java.util.Comparator;
-
-public class Transaction implements Comparator<Transaction> {
+public class Transaction implements Comparable<Transaction> {
 
     private String accountName;
     private String accountNo;
@@ -65,11 +63,9 @@ public class Transaction implements Comparator<Transaction> {
     }
 
 
-
     @Override
-    public int compare(Transaction transaction1, Transaction transaction2) {
-        return transaction2.getCreatedAt() > transaction1.createdAt ? -1 : 0;
+    public int compareTo(Transaction o) {
+        return Long.compare(this.getCreatedAt(),o.getCreatedAt());
     }
 }
-
 
