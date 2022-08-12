@@ -3,7 +3,7 @@
 <head>
     <title>Bank Account</title>
     <link rel="stylesheet" href="css/style.css">
-    <script type=”text/javascript” src=”js/script.js”></script>
+    <script type=”text/javascript” src=js/script.js”></script>
 </head>
 <body>
 
@@ -14,29 +14,20 @@
     </div>
 
     <hr>
-<!--    <div>-->
-
-<!--        <div><h1>Create New Account</h1></div>-->
-<!--        <label for="accountName">Account Name:</label><br>-->
-<!--        <input type="text" id="accountName" name="accountName"><br><br>-->
-
-<!--        <label for="phoneNo">Phone No:</label><br>-->
-<!--        <input type="text" id="phoneNo" name="phoneNo"><br><br>-->
-        <button onclick="generateAccounts()"> Generate account</button>
+    <button onclick="generateAccounts()"> Generate account</button>
 
 
-<!--    </div>-->
     <hr>
 
     <h1>Simulate Withdraw</h1>
     <br>
 
     <label for="withdrawal-accountNo">Account No:</label><br>
-    <input type="text" id="withdrawal-accountNo" name="withdrawal-accountNo"><br><br>
+    <input placeholder="e.g 1234567890" type="text" id="withdrawal-accountNo" name="withdrawal-accountNo"><br><br>
 
     <label for="withdrawal-amount">Amount:</label><br>
-    <input type="text" id="withdrawal-amount" name="withdrawal-amount"><br><br>
-    <button onclick="withdrawRandomAmountsIntoAccount()">Simulate Withdraw</button>
+    <input placeholder="e.g 5000" type="text" id="withdrawal-amount" name="withdrawal-amount"><br><br>
+    <button onclick="withdrawRandomAmountsFromAccount()">Simulate Withdraw</button>
 
     <hr>
 
@@ -44,10 +35,10 @@
     <br>
 
     <label for="deposit-accountNo">Account No:</label><br>
-    <input type="text" id="deposit-accountNo" name="deposit-accountNo"><br><br>
+    <input placeholder="e.g 1234567890" type="text" id="deposit-accountNo" name="deposit-accountNo"><br><br>
 
     <label for="deposit-amount">Amount:</label><br>
-    <input type="text" id="deposit-amount" name="deposit-amount"><br><br>
+    <input placeholder="e.g 5000" type="text" id="deposit-amount" name="deposit-amount"><br><br>
     <button onclick="depositRandomAmountsIntoAccount()">Deposit</button>
 
 
@@ -56,11 +47,12 @@
 <div><h1>List of Accounts</h1></div>
 <br>
 <div class='accountList'></div>
-
+<hr>
+<br>
 <div><h1>List of Transactions</h1></div>
 <label for="search-account">Account No:</label><br>
-<input type="text" id="search-account" name="search-account"><br><br>
-<button onclick="getTransactions()">Search</button>
+<input placeholder="e.g 1234567890"  type="text" id="search-account" name="search-account">
+<button onclick="getTransactions()">Search Record</button>
 <div class='transactionList'>
 
 </div>
@@ -76,91 +68,132 @@
     const BASE_URL = "http://localhost:8779/api/v1/account"
     const accountNumbers = [];
 
-    function createAccount(accountName, phoneNo) {
+    const names = [ "Benedict Cumberbach", "John Doe", "Rachel Zayne", "Jenifer Aniston", "Austin Mark", "Miracle ELue", "Josh Bloch", "Kim Khadashian", "Kanye West", "Bow Wow", "Oscar", "Silvester Stellone", "Merilyn Streep","Adin Ross", "Tommy Shelby","Kurtis Predovic","Berneice Ankunding","Micaela Beahan","Julianne Brakus","Shane Mitchell","Ocie Marvin","Jamel Williamson","Lue Larkin","Athena Hills","Wilhelmine Keebler","Ernesto Stroman","Sylvester Carter","Kristin Hettinger","Ignacio Ryan","Rodolfo Wilderman","Cindy Mills","Eleanore Rath","Bridgette Kling","Arnoldo Wilderman","Daphney Schoen","Juanita Roberts","Forest Huels","Maye Casper","Harry Ankunding","Bret Gusikowski","Micah Corkery","Patricia Kuhlman","Glennie Leannon","Geoffrey Fisher","Cecelia Weissnat","Jerome Lemke","Jillian Brakus","Elian Greenfelder","Antonina Ondricka","Karianne Schuster","Merle Cummerata","Missouri Hodkiewicz","Colten Bins","Rosella Dickinson","Fausto Orn","Amani Gerhold","Orpha Olson","Brannon Kling","Frankie Wuckert","Gilbert Daniel","Adrian Heaney","Genevieve Grady","Marco Dicki","Bonita Langworth","Joshua Parisian","Joana Connelly","Kayleigh Moore","Julio Kessler","Jonathon McCullough","Tina Hessel","Colton Cummings","Gino Buckridge","Marian Nikolaus","Soledad Ortiz","Alanis Paucek","Althea Auer","Annabell Senger","Andres Mohr","Misael Stanton","Forrest Bednar","Leatha Ondricka","Hollie Brown","Leora Brown","Reilly Cartwright","Liliana Cummerata","Anjali Von","Ford Stanton","Ole Pfeffer","Kale Terry","Jeramy Olson","Ahmad Collier","Haleigh Satterfield","Turner Bernier","Naomie Kiehn","Freddie Runolfsson","Eleonore Considine","Pearl Emard","Keyshawn Hartmann","Lilly Bailey","Janice Lakin","Sally DuBuque","Trenton Gleichner","Domingo Hudson","Summer Bergstrom","Donavon Jerde","Nikolas Shields","Gladyce Ankunding","Karolann Rath","Ron Bednar","Furman O'Conner","Clair Lemke","Lysanne Parker","Emely Koepp","Eryn Dietrich","Jovan Ondricka","Start New Search",];
+    function generateAccounts(){
 
+        let promiseArr = [];
         const URL = `${BASE_URL}/create`;
-        let reqObj = {accountName: "", phoneNo: ""}
 
-        // let accountName = document.getElementById("accountName").value
-        // let phoneNo = document.getElementById("phoneNo").value
-        reqObj.accountName = accountName;
-        reqObj.phoneNo = phoneNo;
-        fetch(`${URL}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(reqObj),
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                if(data.status === "false")
-                    window.alert(data.message)
-                else {
-                    console.log(data)
-                    getAccountList();
-                }
-
-            })
-            .catch((err) => {
-                window.alert(err);
-                console.log(err)
-                document.getElementById("error").value = err.message
-            });
-
-    }
-
-    function deposit(accountNo, amount) {
-
-        const URL = `${BASE_URL}/deposit`;
-        if(!accountNo && !amount) {
-             accountNo = document.getElementById("deposit-accountNo").value
-             amount = document.getElementById("deposit-amount").value
+        for (let i = 0; i < 10; i++) {
+            console.log(names)
+            let name = names.pop().replace("\"","");
+            if (!name) break;
+            let reqObj = {accountName: name, phoneNo: generateRandomPhoneNumbers()}
+            promiseArr.push(fetch(`${URL}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(reqObj),
+            }))
         }
-        let reqObj = {accountNo:accountNo, amount: amount}
 
-        fetch(`${URL}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(reqObj),
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                if(data.status === "false")
-                    window.alert(data.message)
-                console.log(data)
-                getTransactions();
+        Promise.all([
+            promiseArr
+        ]).then(function (responses) {
+            // Get a JSON object from each of the responses
+            return Promise.all(responses.map(function (response) {
+                return response.json();
+            }));
+        }).then(function (data) {
+            window.alert(data.message)
+            console.log(data)
+            // getAccountList();
+            // Log the data to the console
+            // You would do something with both sets of data here
+            console.log(data);
+        }).catch(function (error) {
+            // if there's an error, log it
+            console.log(error);
+            window.alert(error.message)
+        });
 
-            })
-            .catch((err) => {
-                window.alert(err);
-                console.log(err)
-            });
+        getAccountList();
+        getTransactions();
     }
 
-    function withdraw() {
+    function generateRandomPhoneNumbers(){
+        let arr = "";
+        while(arr.length < 12){
+            let r = Math.floor(Math.random() * 100) + 1;
+            arr+=r;
+        }
+        return arr;
+    }
 
+    function generateRandomAmount(){
+        return Math.floor((Math.random()+1) * 10000);
+    }
+
+    function depositRandomAmountsIntoAccount(){
+        let promiseArr = [];
+        const URL = `${BASE_URL}/deposit`;
+
+        let accountNumber = document.getElementById("deposit-accountNo").value;
+        if (!accountNumber) window.alert("Please enter an account number")
+
+
+        console.log("depositRandomAmountsIntoAccount()/deposit-accountNo:"+accountNumber)
+
+        for (let i = 0; i < 20; i++) {
+            let reqObj = {accountNo: accountNumber, amount: generateRandomAmount()}
+            promiseArr.push(fetch(`${URL}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(reqObj),
+            }))
+        }
+        Promise.all([
+            promiseArr
+        ]).then(function (responses) {
+            // Get a JSON object from each of the responses
+            return Promise.all(responses.map(function (response) {
+                return response.json();
+            }));
+        }).then(function (data) {
+            console.log(data)
+            // Log the data to the console
+            // You would do something with both sets of data here
+            console.log(data);
+        }).catch(function (error) {
+            // if there's an error, log it
+            console.log(error);
+        });
+        getAccountList();
+        getTransactions();
+
+    }
+
+    function withdrawRandomAmountsFromAccount(){
+        let promiseArr = [];
         const URL = `${BASE_URL}/withdraw`;
-        let accountNo = document.getElementById("withdrawal-accountNo").value
-        let amount = document.getElementById("withdrawal-amount").value
-        let reqObj = {accountNo:accountNo, amount: amount}
+        let accountNumber = document.getElementById("withdrawal-accountNo").value;
+        if (!accountNumber) window.alert("Please enter an account number")
 
-        fetch(`${URL}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(reqObj),
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                if(data.status === "false")
-                window.alert(data.message)
-                console.log(data)
-                getTransactions();
-
-            })
-            .catch((err) => {
-                window.alert(err.message)
-                console.log('erroror'+err)
-            });
-
+        for (let i = 0; i < 25; i++) {
+            let reqObj = {accountNo: accountNumber, amount: generateRandomAmount()}
+            promiseArr.push(fetch(`${URL}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(reqObj),
+            }))
+        }
+        Promise.all([
+            promiseArr
+        ]).then(function (responses) {
+            // Get a JSON object from each of the responses
+            return Promise.all(responses.map(function (response) {
+                return response.json();
+            }));
+        }).then(function (data) {
+            console.log(data)
+            // Log the data to the console
+            // You would do something with both sets of data here
+            console.log(data);
+        }).catch(function (error) {
+            // if there's an error, log it
+            console.log(error);
+        });
+        getAccountList();
+        getTransactions();
     }
 
     function parseUnixTimestamp(timeStamp) {
@@ -171,7 +204,8 @@
         return hr+ ':' + m.substr(-2) + ':' + s.substr(-2);
     }
 
-     //####################################### TRANSACTION LIST ###################################################################
+
+    //####################################### TRANSACTION LIST TABLE ###################################################################
 
     let tableHeaders = ["Account Name", "Account Number", "Amount", "Transaction Type", "Time"]
     const transactionListDiv = document.querySelector("div.transactionList") // Find the transactionList div in the html
@@ -240,7 +274,9 @@
             })
     }
 
-    //########################################### ACCOUNT LIST ###############################################################
+
+    
+    //########################################### ACCOUNT LIST TABLE ###############################################################
     let accountTableHeaders = ["Account Name", "Account No", "Phone No", "Balance"]
     const accountListDiv = document.querySelector("div.accountList") // Find the accountList div in our html
     const createAccountListTable = () => {
@@ -301,128 +337,9 @@
             })
     }
 
-    //##########################################################################################################
-
-    function generateAccounts(){
-        let names = [ "Benedict Cumberbach", "John Doe", "Rachel Zayne", "Jenifer Aniston", "Austin Mark", "Miracle ELue", "Josh Bloch", "Kim Khadashian", "Kanye West", "Bow Wow", "Oscar", "Silvester Stellone", "Merilyn Streep","Adin Ross", "Tommy Shelby","Kurtis Predovic","Berneice Ankunding","Micaela Beahan","Julianne Brakus","Shane Mitchell","Ocie Marvin","Jamel Williamson","Lue Larkin","Athena Hills","Wilhelmine Keebler","Ernesto Stroman","Sylvester Carter","Kristin Hettinger","Ignacio Ryan","Rodolfo Wilderman","Cindy Mills","Eleanore Rath","Bridgette Kling","Arnoldo Wilderman","Daphney Schoen","Juanita Roberts","Forest Huels","Maye Casper","Harry Ankunding","Bret Gusikowski","Micah Corkery","Patricia Kuhlman","Glennie Leannon","Geoffrey Fisher","Cecelia Weissnat","Jerome Lemke","Jillian Brakus","Elian Greenfelder","Antonina Ondricka","Karianne Schuster","Merle Cummerata","Missouri Hodkiewicz","Colten Bins","Rosella Dickinson","Fausto Orn","Amani Gerhold","Orpha Olson","Brannon Kling","Frankie Wuckert","Gilbert Daniel","Adrian Heaney","Genevieve Grady","Marco Dicki","Bonita Langworth","Joshua Parisian",];
-
-        let promiseArr = [];
-        const URL = `${BASE_URL}/create`;
-
-        for (let i = 0; i < 10; i++) {
-            // console.log(names.pop())
-            let reqObj = {accountName: names.pop(), phoneNo: generateRamdomPhoneNumbers()}
-            promiseArr.push(fetch(`${URL}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(reqObj),
-            }))
-        }
-
-        Promise.all([
-            promiseArr
-        ]).then(function (responses) {
-            // Get a JSON object from each of the responses
-            return Promise.all(responses.map(function (response) {
-                return response.json();
-            }));
-        }).then(function (data) {
-            window.alert(data.message)
-                        console.log(data)
-                        // getAccountList();
-            // Log the data to the console
-            // You would do something with both sets of data here
-            console.log(data);
-        }).catch(function (error) {
-            // if there's an error, log it
-            console.log(error);
-            window.alert(error.message)
-        });
-
-        getAccountList();
-        getTransactions();
-            }
-    function generateRamdomPhoneNumbers(){
-        let arr = "";
-        while(arr.length < 12){
-            let r = Math.floor(Math.random() * 100) + 1;
-            arr+=r;
-        }
-        return arr;
-    }
-
-    function generateRandomAmount(){
-        return Math.floor((Math.random()+1) * 10000);
-    }
-
-    function depositRandomAmountsIntoAccount(){
-        let promiseArr = [];
-        const URL = `${BASE_URL}/deposit`;
-
-        for (let i = 0; i < accountNumbers.length; i++) {
-            let reqObj = {accountNo: accountNumbers[i], amount: generateRandomAmount()}
-            promiseArr.push(fetch(`${URL}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(reqObj),
-            }))
-        }
-        Promise.all([
-            promiseArr
-        ]).then(function (responses) {
-            // Get a JSON object from each of the responses
-            return Promise.all(responses.map(function (response) {
-                return response.json();
-            }));
-        }).then(function (data) {
-            console.log(data)
-            // Log the data to the console
-            // You would do something with both sets of data here
-            console.log(data);
-        }).catch(function (error) {
-            // if there's an error, log it
-            console.log(error);
-        });
-        getAccountList();
-        getTransactions();
-
-    }
-
-    function withdrawRandomAmountsIntoAccount(){
-        let promiseArr = [];
-        const URL = `${BASE_URL}/withdraw`;
-
-        for (let i = 0; i < accountNumbers.length; i++) {
-            let reqObj = {accountNo: accountNumbers[i], amount: generateRandomAmount()}
-            promiseArr.push(fetch(`${URL}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(reqObj),
-            }))
-        }
-        Promise.all([
-            promiseArr
-        ]).then(function (responses) {
-            // Get a JSON object from each of the responses
-            return Promise.all(responses.map(function (response) {
-                return response.json();
-            }));
-        }).then(function (data) {
-            console.log(data)
-            // Log the data to the console
-            // You would do something with both sets of data here
-            console.log(data);
-        }).catch(function (error) {
-            // if there's an error, log it
-            console.log(error);
-        });
-        getAccountList();
-        getTransactions();
-    }
 
 
 </script>
 </body>
 </html>
-
 
